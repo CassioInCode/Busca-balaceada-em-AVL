@@ -1,0 +1,143 @@
+/*Busca balanceada em AVL*/
+
+#include <iostream>
+using namespace std;
+
+// Definição do nó da árvore AVL
+struct Node {
+    int key;
+    Node* left;
+    Node* right;
+    int height;
+};
+
+// Função para criar um novo nó
+Node* newNode(int key) {
+    Node* node = new Node();
+    node->key = key;
+    node->left = NULL;
+    node->right = NULL;
+    node->height = 1; // Novo nó é adicionado como folha
+    return node;
+}
+
+// Função para calcular a altura de um nó
+int height(Node* node) {
+    if (node == NULL)
+        return 0;
+    return node->height;
+}
+
+// Função para calcular o fator de balanceamento de um nó
+int balanceFactor(Node* node) {
+    if (node == NULL)
+        return 0;
+    return height(node->left) - height(node->right);
+}
+
+// Função para realizar rotação simples para a esquerda
+Node* rotateLeft(Node* x) {
+    Node* y = x->right;
+    Node* T2 = y->left;
+
+    // Realiza a rotação
+    y->left = x;
+    x->right = T2;
+
+    // Atualiza alturas
+    x->height = max(height(x->left), height(x->right)) + 1;
+    y->height = max(height(y->left), height(y->right)) + 1;
+
+    // Retorna a nova raiz
+    return y;
+}
+
+// Função para realizar rotação simples para a direita
+Node* rotateRight(Node* y) {
+    Node* x = y->left;
+    Node* T2 = x->right;
+
+    // Realiza a rotação
+    x->right = y;
+    y->left = T2;
+
+    // Atualiza alturas
+    y->height = max(height(y->left), height(y->right)) + 1;
+    x->height = max(height(x->left), height(x->right)) + 1;
+
+    // Retorna a nova raiz
+    return x;
+}
+
+// Função para inserir um nó na árvore AVL
+Node* insert(Node* node, int key) {
+    // Insere o novo nó como em uma árvore binária de busca
+    if (node == NULL)
+        return newNode(key);
+
+    if (key < node->key)
+        node->left = insert(node->left, key);
+    else if (key > node->key)
+        node->right = insert(node->right, key);
+    else // Chaves iguais não são permitidas na árvore AVL
+        return node;
+
+    // Atualiza a altura do nó atual
+    node->height = 1 + max(height(node->left), height(node->right));
+
+    // Calcula o fator de balanceamento deste nó para verificar se a árvore ficou desbalanceada
+    int balance = balanceFactor(node);
+
+    // Se este nó ficou desbalanceado, então verifica-se os casos de rotação
+
+    // Rotação simples para a direita
+    if (balance > 1 && key < node->left->key)
+        return rotateRight(node);
+
+    // Rotação simples para a esquerda
+    if (balance < -1 && key > node->right->key)
+        return rotateLeft(node);
+
+    // Rotação dupla para a direita (LR)
+    if (balance > 1 && key > node->left->key) {
+        node->left = rotateLeft(node->left);
+        return rotateRight(node);
+    }
+
+    // Rotação dupla para a esquerda (RL)
+    if (balance < -1 && key < node->right->key) {
+        node->right = rotateRight(node->right);
+        return rotateLeft(node);
+    }
+
+    // Nenhum caso de rotação é necessário
+    return node;
+}
+
+// Função para percorrer a árvore em ordem (inorder)
+void inorder(Node* root) {
+    if (root == NULL)
+        return;
+    inorder(root->left);
+    cout << root->key << " ";
+    inorder(root->right);
+}
+
+// Função principal
+int main() {
+    Node* root = NULL;
+
+    // Inserindo chaves na árvore AVL
+    root = insert(root, 10);
+    root = insert(root, 20);
+    root = insert(root, 30);
+    root = insert(root, 40);
+    root = insert(root, 50);
+    root = insert(root, 25);
+
+    cout << "Árvore AVL após a inserção: ";
+    inorder(root);
+    cout << endl;
+
+    return 0;
+}
